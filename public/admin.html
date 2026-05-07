@@ -177,8 +177,7 @@
     async function login() {
       const pw = document.getElementById('password-input').value.trim();
       if (!pw) return;
-      // Test password with a fake upload
-      const res = await fetch('/upload', {
+      const res = await fetch('/check-auth', {
         method: 'POST',
         headers: { 'x-admin-password': pw }
       });

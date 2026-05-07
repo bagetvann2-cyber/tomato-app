@@ -59,6 +59,12 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.post('/check-auth', (req, res) => {
+  const pw = req.headers['x-admin-password'];
+  if (pw === ADMIN_PASSWORD) res.json({ ok: true });
+  else res.status(401).json({ error: 'Неверный пароль' });
+});
+
 // List photos
 app.get('/photos', async (req, res) => {
   try {
