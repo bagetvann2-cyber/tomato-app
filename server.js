@@ -55,6 +55,10 @@ let onlineCount = 0;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // List photos
 app.get('/photos', async (req, res) => {
   try {
