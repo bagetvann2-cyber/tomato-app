@@ -97,7 +97,12 @@ app.post('/upload', (req, res, next) => {
     return res.status(401).json({ error: 'Неверный пароль' });
   }
   next();
-}, upload.single('photo'), (req, res) => {
+}, (req, res, next) => {
+  upload.single('photo')(req, res, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    next();
+  });
+}, (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Нет файла' });
   const photo = useCloudinary
     ? { id: req.file.filename, url: req.file.path, name: path.basename(req.file.filename) }
