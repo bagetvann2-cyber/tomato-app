@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка - Кидалка помидоров</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a1a;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px 20px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 22px; margin-bottom: 24px; }
+    h2 { font-size: 16px; color: #aaa; margin-bottom: 14px; }
+
+    #auth-block, #main-block { display: none; }
+
+    .card {
+      background: #252525;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    input[type="password"], input[type="file"] {
+      width: 100%;
+      padding: 10px 14px;
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 22px;
+      background: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #ff5722; }
+    button.secondary {
+      background: #333;
+      font-weight: 400;
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+    button.secondary:hover { background: #c62828; }
+
+    #upload-status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    #upload-status.ok { color: #4caf50; }
+    #upload-status.err { color: #ef5350; }
+
+    #photos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .photo-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #333;
+    }
+    .photo-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    .photo-item .del-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #c62828cc;
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .photo-item .del-btn:hover { background: #c62828; }
+    .photo-item .photo-name {
+      font-size: 11px;
+      color: #888;
+      padding: 4px 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #no-photos-msg { color: #666; font-size: 14px; }
+
+    a { color: #ff7043; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    #progress-bar-wrap {
+      width: 100%;
+      background: #333;
+      border-radius: 4px;
+      height: 6px;
+      margin-top: 10px;
+      display: none;
+    }
+    #progress-bar {
+      height: 6px;
+      background: #e53935;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.2s;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🍅 Админка</h1>
+
+  <div id="auth-block" class="card">
+    <h2>Введи пароль</h2>
+    <input type="password" id="password-input" placeholder="Пароль" />
+    <button onclick="login()">Войти</button>
+    <div id="auth-error" style="color:#ef5350;font-size:13px;margin-top:8px;"></div>
+  </div>
+
+  <div id="main-block">
+    <div class="card">
+      <h2>Загрузить фото</h2>
+      <input type="file" id="file-input" accept="image/*" multiple />
+      <button onclick="uploadPhotos()">Загрузить</button>
+      <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+      <div id="upload-status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Текущие фото <button class="secondary" onclick="loadPhotos()">Обновить</button></h2>
+      <div id="photos-grid"></div>
+      <div id="no-photos-msg" style="display:none">Нет фото - загрузи выше</div>
+    </div>
+
+    <p style="color:#555;font-size:13px"><a href="/">Вернуться на сайт</a></p>
+  </div>
+
+  <script>
+    let password = sessionStorage.getItem('admin_password') || '';
+
+    window.onload = () => {
+      if (password) {
+        showMain();
+      } else {
+        document.getElementById('auth-block').style.display = 'block';
+        document.getElementById('password-input').addEventListener('keydown', e => {
+          if (e.key === 'Enter') login();
+        });
+      }
+    };
+
+    async function login() {
+      const pw = document.getElementById('password-input').value.trim();
+      if (!pw) return;
+      // Test password with a fake upload
+      const res = await fetch('/upload', {
+        method: 'POST',
+        headers: { 'x-admin-password': pw }
+      });
+      if (res.status === 401) {
+        document.getElementById('auth-error').textContent = 'Неверный пароль';
+        return;
+      }
+      password = pw;
+      sessionStorage.setItem('admin_password', pw);
+      showMain();
+    }
+
+    function showMain() {
+      document.getElementById('auth-block').style.display = 'none';
+      document.getElementById('main-block').style.display = 'block';
+      loadPhotos();
+    }
+
+    async function loadPhotos() {
+      const grid = document.getElementById('photos-grid');
+      const noMsg = document.getElementById('no-photos-msg');
+      grid.innerHTML = '';
+      const photos = await fetch('/photos').then(r => r.json());
+      if (photos.length === 0) {
+        noMsg.style.display = 'block';
+        return;
+      }
+      noMsg.style.display = 'none';
+      photos.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        item.innerHTML = `
+          <img src="${p.url}" loading="lazy" />
+          <button class="del-btn" onclick="deletePhoto('${p.id}', this)" title="Удалить">x</button>
+          <div class="photo-name">${p.name}</div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    async function uploadPhotos() {
+      const files = document.getElementById('file-input').files;
+      if (!files.length) return;
+
+      const statusEl = document.getElementById('upload-status');
+      const progressWrap = document.getElementById('progress-bar-wrap');
+      const progressBar = document.getElementById('progress-bar');
+
+      progressWrap.style.display = 'block';
+      statusEl.className = '';
+      statusEl.textContent = '';
+
+      let done = 0;
+      const total = files.length;
+
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('photo', file);
+        statusEl.textContent = `Загружаю ${file.name}...`;
+        try {
+          const res = await fetch('/upload', {
+            method: 'POST',
+            headers: { 'x-admin-password': password },
+            body: fd
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error);
+          done++;
+          progressBar.style.width = (done / total * 100) + '%';
+        } catch (e) {
+          statusEl.className = 'err';
+          statusEl.textContent = 'Ошибка: ' + e.message;
+          progressWrap.style.display = 'none';
+          return;
+        }
+      }
+
+      statusEl.className = 'ok';
+      statusEl.textContent = `Загружено ${done} фото`;
+      document.getElementById('file-input').value = '';
+      setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 1000);
+      loadPhotos();
+    }
+
+    async function deletePhoto(id, btn) {
+      if (!confirm('Удалить это фото?')) return;
+      btn.disabled = true;
+      const res = await fetch('/photo/' + encodeURIComponent(id), {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password }
+      });
+      const data = await res.json();
+      if (data.ok) {
+        btn.closest('.photo-item').remove();
+      } else {
+        alert('Ошибка: ' + data.error);
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

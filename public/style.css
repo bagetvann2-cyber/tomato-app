@@ -1,0 +1,244 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #1a1a1a;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Top bar */
+#top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #111;
+  border-bottom: 2px solid #333;
+}
+
+#title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+#online-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+#online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4caf50;
+  box-shadow: 0 0 8px #4caf50;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Photo selector */
+#photo-selector {
+  padding: 12px 20px;
+  background: #222;
+  border-bottom: 1px solid #333;
+  overflow-x: auto;
+}
+
+#photo-selector.hidden {
+  display: none;
+}
+
+#thumbnails {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.thumb:hover {
+  transform: scale(1.08);
+  border-color: #e53935;
+}
+
+.thumb.active {
+  border-color: #ff5722;
+  box-shadow: 0 0 12px #ff572288;
+}
+
+/* Main area */
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  gap: 20px;
+}
+
+#photo-wrapper {
+  position: relative;
+  cursor: crosshair;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px #0008;
+  max-width: 500px;
+  width: 100%;
+  user-select: none;
+}
+
+#main-photo {
+  display: block;
+  width: 100%;
+  max-height: 550px;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+#splats-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#no-photos {
+  padding: 80px 40px;
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+}
+
+#no-photos.hidden {
+  display: none;
+}
+
+#no-photos code {
+  background: #333;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Button */
+#throw-btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#throw-btn {
+  padding: 14px 36px;
+  font-size: 18px;
+  font-weight: 700;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, opacity 0.2s;
+  box-shadow: 0 4px 20px #e5393566;
+}
+
+#throw-btn:hover:not(:disabled) {
+  background: #ff5722;
+  transform: scale(1.04);
+}
+
+#throw-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+#throw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#throw-btn.cooldown {
+  background: #555;
+  box-shadow: none;
+}
+
+#counter-text {
+  font-size: 14px;
+  color: #888;
+}
+
+#counter-text span {
+  color: #ff7043;
+  font-weight: 700;
+}
+
+/* Splat */
+.splat {
+  position: absolute;
+  border-radius: 50% 40% 60% 45% / 55% 50% 45% 60%;
+  background: radial-gradient(circle at 35% 35%, #ff6b35, #c0392b 50%, #8e1c0e);
+  opacity: 0.82;
+  transform-origin: center;
+  pointer-events: none;
+  animation: splat-in 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.splat::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 30%;
+  height: 20%;
+  background: rgba(255, 180, 120, 0.5);
+  border-radius: 50%;
+  transform: rotate(-20deg);
+}
+
+@keyframes splat-in {
+  from {
+    transform: scale(0) rotate(var(--rot));
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(var(--rot));
+    opacity: 0.82;
+  }
+}
+
+/* Flying tomato */
+#flying-tomatoes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.flying-tomato {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  pointer-events: none;
+  transition: none;
+  will-change: transform;
+}

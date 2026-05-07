@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кидалка помидоров в лидера клана дауна</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="top-bar">
+    <div id="online-badge">
+      <span id="online-dot"></span>
+      <span id="online-count">0</span> онлайн
+    </div>
+    <div id="title">🍅 Кидалка помидоров в лидера клана дауна</div>
+  </div>
+
+  <div id="photo-selector" class="hidden">
+    <div id="thumbnails"></div>
+  </div>
+
+  <div id="main">
+    <div id="photo-wrapper">
+      <div id="no-photos" class="hidden">
+        <p>Положи фото в папку <code>public/photos/</code></p>
+      </div>
+      <img id="main-photo" src="" alt="Кидай помидор!" draggable="false">
+      <div id="splats-layer"></div>
+    </div>
+
+    <div id="throw-btn-wrapper">
+      <button id="throw-btn" disabled>🍅 Кинуть помидор!</button>
+      <div id="counter-text">помидоров брошено: <span id="total-count">0</span></div>
+    </div>
+  </div>
+
+  <div id="flying-tomatoes"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
